@@ -97,6 +97,89 @@
                         android:textStyle="italic"
                         android:fontFamily="monospace" />
 
+                    <TextView
+                        android:id="@+id/text_power_generation_title"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Power Generation by Type:"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginTop="8dp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace"
+                        android:visibility="gone" />
+
+                    <TextView
+                        android:id="@+id/text_power_generation"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text=""
+                        android:textSize="12sp"
+                        android:fontFamily="monospace"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Local Configuration Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Local Configuration"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
+                        android:id="@+id/text_local_max_production"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Current Production:  0 MW"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/text_local_consumption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Total Consumption:  0 MW"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/text_local_balance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Current Balance:  0 MW"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="(Based on locally configured buildings and powerplants)"
+                        android:textSize="12sp"
+                        android:textStyle="italic"
+                        android:textColor="?android:attr/textColorSecondary" />
+
                 </LinearLayout>
 
             </com.google.android.material.card.MaterialCardView>
@@ -131,6 +214,16 @@
                 android:text="Adjust Production"
                 android:layout_marginBottom="8dp"
                 app:icon="@android:drawable/ic_menu_edit" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_submit_data"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Submit Board Data to Server"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.MaterialComponents.Button"
+                android:backgroundTint="@color/dark_red_500"
+                app:icon="@android:drawable/ic_menu_upload" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_add_buildings"

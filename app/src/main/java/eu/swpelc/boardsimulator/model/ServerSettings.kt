@@ -5,6 +5,7 @@ data class ServerSettings(
     val lecturerUsername: String = "lecturer1",
     val lecturerPassword: String = "lecturer123",
     val boardUsernames: String = "board1, board2, board3",
+    val boardCredentials: Map<String, String> = emptyMap(), // Individual board passwords
     val refreshInterval: Long = 10000L // Default 10 seconds in milliseconds
 )
 
@@ -34,11 +35,12 @@ data class BoardData(
     val board_id: String,
     val connected_consumption: List<Int>,
     val connected_production: List<Int>,
+    val consumption: Double,
     val consumption_history: List<Double>,
-    val current_consumption: Double,
-    val current_production: Double,
     val history_length: HistoryLength,
     val last_updated: Double,
+    val power_generation_by_type: Map<String, Double>,
+    val production: Double,
     val production_history: List<Double>
 )
 

@@ -61,7 +61,7 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
     }
 
     private fun setupRepositories() {
-        boardConfigRepository = BoardConfigRepository(this)
+        boardConfigRepository = BoardConfigRepository.getInstance(this)
     }
 
     private fun setupViewModel() {
@@ -72,7 +72,8 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
 
     private fun setupRecyclerView() {
         productionAdapter = ProductionSliderAdapter { powerplantName, newProduction ->
-            // TODO: Save production adjustment to API or local storage
+            // Save production adjustment to local storage
+            boardConfigRepository.setProductionLevel(boardId, powerplantName, newProduction)
         }
         
         binding.recyclerViewProduction.apply {
@@ -118,26 +119,44 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
                 val coefficient = productionCoefficients[name] ?: 0.0
                 val isRenewable = name.lowercase().contains("wind") || name.lowercase().contains("photovoltaic")
                 
-                // Calculate min/max production based on powerplant ranges
-                val range = powerplantRanges?.get(name)
+                // Find the correct range - try both the exact name and uppercase version
+                val range = powerplantRanges?.get(name) ?: powerplantRanges?.get(name.uppercase())
+                
+                // Calculate min/max production based on powerplant ranges and coefficients
                 val minProduction = if (isRenewable) {
                     // For renewable sources, production is fixed at coefficient * quantity
                     coefficient * quantity
                 } else {
-                    // For controllable sources, use minimum from range or 0
-                    (range?.min ?: 0.0) * coefficient * quantity
+                    // For controllable sources, use minimum from range
+                    val rangeMin = range?.min ?: 0.0
+                    rangeMin * coefficient * quantity
                 }
-                val maxProduction = (range?.max ?: 1.0) * coefficient * quantity
                 
-                ProductionSliderItem(
-                    powerplantName = name,
-                    quantity = quantity,
-                    coefficient = coefficient,
-                    minProduction = minProduction,
-                    maxProduction = maxProduction,
-                    currentProduction = maxProduction, // Default to max
-                    isRenewable = isRenewable
-                )
+                val maxProduction = if (range != null) {
+                    range.max * coefficient * quantity
+                } else {
+                    // If no range found, default based on coefficient
+                    if (coefficient > 0) coefficient * quantity else 0.0
+                }
+                
+                // Only include items with non-zero max production or renewable sources
+                if (maxProduction > 0 || isRenewable) {
+                    // Load saved production level or default to max
+                    val savedProductionLevel = boardConfigRepository.getProductionLevel(boardId, name)
+                    val currentProduction = savedProductionLevel ?: maxProduction
+                    
+                    ProductionSliderItem(
+                        powerplantName = name,
+                        quantity = quantity,
+                        coefficient = coefficient,
+                        minProduction = minProduction,
+                        maxProduction = maxProduction,
+                        currentProduction = currentProduction,
+                        isRenewable = isRenewable
+                    )
+                } else {
+                    null // Don't show powerplants with 0 max production (like Gas with coefficient 0)
+                }
             } else null
         }
         

@@ -33,10 +33,10 @@ class BoardAdapter(
         
         fun bind(boardId: String, boardData: BoardData) {
             binding.textBoardId.text = "Board $boardId"
-            binding.textProduction.text = "Production: ${boardData.current_production.toInt()}"
-            binding.textConsumption.text = "Consumption: ${boardData.current_consumption.toInt()}"
+            binding.textProduction.text = "Production: ${boardData.production.toInt()}"
+            binding.textConsumption.text = "Consumption: ${boardData.consumption.toInt()}"
             
-            val isActive = boardData.current_production > 0 || boardData.current_consumption > 0
+            val isActive = boardData.production > 0 || boardData.consumption > 0
             binding.textStatus.text = if (isActive) "Active" else "Inactive"
             
             binding.root.setOnClickListener {

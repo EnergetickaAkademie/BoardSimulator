@@ -62,7 +62,7 @@ class BuildingSelectionActivity : AppCompatActivity() {
     }
 
     private fun setupRepositories() {
-        boardConfigRepository = BoardConfigRepository(this)
+        boardConfigRepository = BoardConfigRepository.getInstance(this)
     }
 
     private fun setupViewModel() {

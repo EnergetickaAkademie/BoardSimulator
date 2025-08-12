@@ -5,10 +5,16 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.textfield.TextInputEditText
+import com.google.android.material.textfield.TextInputLayout
+import eu.swpelc.boardsimulator.R
 import eu.swpelc.boardsimulator.databinding.FragmentSlideshowBinding
 import eu.swpelc.boardsimulator.model.ServerSettings
 import eu.swpelc.boardsimulator.repository.SettingsRepository
@@ -56,6 +62,7 @@ class SlideshowFragment : Fragment() {
                 binding.editLecturerUsername.setText(settings.lecturerUsername)
                 binding.editLecturerPassword.setText(settings.lecturerPassword)
                 updateLoginButtonState()
+                updateBoardLoginButtonState()
             }
         }
 
@@ -67,9 +74,16 @@ class SlideshowFragment : Fragment() {
         }
 
         lifecycleScope.launch {
+            settingsViewModel.boardTokens.collect { tokens ->
+                updateBoardLoginButtonState()
+            }
+        }
+
+        lifecycleScope.launch {
             settingsViewModel.isLoading.collect { isLoading ->
                 binding.buttonSave.isEnabled = !isLoading
                 binding.buttonLogin.isEnabled = !isLoading
+                binding.buttonLoginBoards.isEnabled = !isLoading && currentSettings?.serverIp?.isNotEmpty() == true
                 binding.buttonViewSimulation.isEnabled = !isLoading && settingsViewModel.isLoggedIn()
                 binding.progressBar.visibility = if (isLoading) View.VISIBLE else View.GONE
             }
@@ -98,6 +112,30 @@ class SlideshowFragment : Fragment() {
                 }
             }
         }
+
+        lifecycleScope.launch {
+            settingsViewModel.boardLoginResult.collect { result ->
+                result?.let {
+                    if (it.isSuccess) {
+                        val successfulLogins = it.getOrNull() ?: emptyMap()
+                        val totalBoards = currentSettings?.boardUsernames?.split(",")?.size ?: 0
+                        Toast.makeText(
+                            context, 
+                            "Board login & registration completed! ${successfulLogins.size}/$totalBoards boards active", 
+                            Toast.LENGTH_LONG
+                        ).show()
+                        updateBoardLoginButtonState()
+                    } else {
+                        Toast.makeText(
+                            context, 
+                            "Board login failed: ${it.exceptionOrNull()?.message}", 
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    settingsViewModel.clearBoardLoginResult()
+                }
+            }
+        }
     }
 
     private fun setupClickListeners() {
@@ -111,6 +149,14 @@ class SlideshowFragment : Fragment() {
             } else {
                 login()
             }
+        }
+
+        binding.buttonLoginBoards.setOnClickListener {
+            loginBoards()
+        }
+
+        binding.buttonConfigureBoardCredentials.setOnClickListener {
+            showBoardCredentialsDialog()
         }
 
         binding.buttonViewSimulation.setOnClickListener {
@@ -152,6 +198,7 @@ class SlideshowFragment : Fragment() {
             lecturerUsername = lecturerUsername.ifEmpty { "lecturer1" },
             lecturerPassword = lecturerPassword.ifEmpty { "lecturer123" },
             boardUsernames = boardUsernames.ifEmpty { "board1, board2, board3" },
+            boardCredentials = currentSettings?.boardCredentials ?: emptyMap(),
             refreshInterval = refreshInterval
         )
 
@@ -166,6 +213,20 @@ class SlideshowFragment : Fragment() {
                 return
             }
             settingsViewModel.login()
+        }
+    }
+
+    private fun loginBoards() {
+        currentSettings?.let { settings ->
+            if (settings.serverIp.isEmpty()) {
+                Toast.makeText(context, "Please configure server IP first", Toast.LENGTH_SHORT).show()
+                return
+            }
+            if (settings.boardUsernames.isEmpty()) {
+                Toast.makeText(context, "Please configure board usernames first", Toast.LENGTH_SHORT).show()
+                return
+            }
+            settingsViewModel.loginBoards()
         }
     }
 
@@ -187,6 +248,85 @@ class SlideshowFragment : Fragment() {
 
     private fun updateSimulationButtonState() {
         binding.buttonViewSimulation.isEnabled = settingsViewModel.isLoggedIn()
+    }
+
+    private fun updateBoardLoginButtonState() {
+        val boardCount = settingsViewModel.getLoggedInBoardCount()
+        val totalBoards = currentSettings?.boardUsernames?.split(",")?.filter { it.trim().isNotEmpty() }?.size ?: 0
+        
+        if (boardCount > 0) {
+            binding.buttonLoginBoards.text = "Boards Active ($boardCount/$totalBoards)"
+        } else {
+            binding.buttonLoginBoards.text = "Login & Register Boards"
+        }
+        
+        binding.buttonLoginBoards.isEnabled = currentSettings?.serverIp?.isNotEmpty() == true && 
+                                              currentSettings?.boardUsernames?.isNotEmpty() == true
+    }
+
+    private fun showBoardCredentialsDialog() {
+        val settings = currentSettings ?: return
+        val boardUsernames = settings.boardUsernames.split(",").map { it.trim() }.filter { it.isNotEmpty() }
+        
+        if (boardUsernames.isEmpty()) {
+            Toast.makeText(context, "Please configure board usernames first", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_board_credentials, null)
+        val layoutCredentials = dialogView.findViewById<LinearLayout>(R.id.layout_board_credentials)
+        
+        val editTexts = mutableMapOf<String, EditText>()
+        
+        // Create input fields for each board
+        for (username in boardUsernames) {
+            val textInputLayout = TextInputLayout(requireContext()).apply {
+                hint = "$username Password"
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    bottomMargin = 32
+                }
+            }
+            
+            val editText = TextInputEditText(requireContext()).apply {
+                setText(settings.boardCredentials[username] ?: "board123")
+                inputType = android.text.InputType.TYPE_CLASS_TEXT or android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD
+            }
+            
+            textInputLayout.addView(editText)
+            layoutCredentials.addView(textInputLayout)
+            editTexts[username] = editText
+        }
+        
+        val dialog = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .create()
+        
+        dialogView.findViewById<View>(R.id.button_cancel).setOnClickListener {
+            dialog.dismiss()
+        }
+        
+        dialogView.findViewById<View>(R.id.button_save_credentials).setOnClickListener {
+            val newCredentials = mutableMapOf<String, String>()
+            
+            for ((username, editText) in editTexts) {
+                val password = editText.text.toString().trim()
+                if (password.isNotEmpty()) {
+                    newCredentials[username] = password
+                }
+            }
+            
+            // Update settings with new board credentials
+            val updatedSettings = settings.copy(boardCredentials = newCredentials)
+            settingsViewModel.saveSettings(updatedSettings)
+            
+            Toast.makeText(context, "Board credentials saved successfully", Toast.LENGTH_SHORT).show()
+            dialog.dismiss()
+        }
+        
+        dialog.show()
     }
 
     override fun onDestroyView() {

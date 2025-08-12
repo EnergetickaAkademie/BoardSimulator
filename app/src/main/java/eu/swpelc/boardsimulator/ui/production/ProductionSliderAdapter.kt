@@ -39,19 +39,27 @@ class ProductionSliderAdapter(
                 textPowerplantName.text = item.powerplantName
                 textQuantity.text = "Quantity: ${item.quantity}"
                 
-                if (item.isRenewable) {
-                    // For renewable sources, show only the fixed value
+                if (item.isRenewable || item.minProduction == item.maxProduction) {
+                    // For renewable sources or fixed production, show only the fixed value
                     seekBarProduction.visibility = android.view.View.GONE
-                    textProductionValue.text = String.format("%.2f MW (Fixed)", item.maxProduction)
-                    textProductionRange.text = "Renewable energy - production varies with conditions"
+                    if (item.isRenewable) {
+                        textProductionValue.text = String.format("%.2f MW (Renewable)", item.maxProduction)
+                        textProductionRange.text = "Renewable energy - production varies with conditions"
+                    } else {
+                        textProductionValue.text = String.format("%.2f MW (Fixed)", item.maxProduction)
+                        textProductionRange.text = "Fixed production level"
+                    }
                 } else {
-                    // For controllable sources, show slider
+                    // For controllable sources with variable range, show slider
                     seekBarProduction.visibility = android.view.View.VISIBLE
                     
-                    // Set up the slider
-                    val range = (item.maxProduction - item.minProduction).toInt()
-                    seekBarProduction.max = if (range > 0) range else 1
-                    seekBarProduction.progress = ((item.currentProduction - item.minProduction).roundToInt())
+                    // Set up the slider for ranges that can include negative values
+                    val totalRange = (item.maxProduction - item.minProduction).toInt()
+                    seekBarProduction.max = if (totalRange > 0) totalRange else 1
+                    
+                    // Calculate progress relative to minimum value
+                    val currentProgress = ((item.currentProduction - item.minProduction).roundToInt()).coerceIn(0, totalRange)
+                    seekBarProduction.progress = currentProgress
                     
                     // Update text displays
                     updateProductionDisplay(item, item.currentProduction)
@@ -60,7 +68,7 @@ class ProductionSliderAdapter(
                     seekBarProduction.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
                         override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                             if (fromUser) {
-                                val newProduction = item.minProduction + progress
+                                val newProduction = item.minProduction + progress.toDouble()
                                 updateProductionDisplay(item, newProduction)
                                 onProductionChanged(item.powerplantName, newProduction)
                             }
