@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:theme="@style/Theme.BoardSimulator.AppBarOverlay">
+
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="?attr/colorPrimary"
+            app:popupTheme="@style/Theme.BoardSimulator.PopupOverlay" />
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <ProgressBar
+                android:id="@+id/progress_bar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:visibility="gone"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Board Status Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardElevation="4dp"
+                app:cardCornerRadius="8dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Board Status"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
+                        android:id="@+id/text_current_production"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Current Production:  450 MW"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/text_current_consumption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Current Consumption:  600 MW"
+                        android:textSize="14sp"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/text_balance"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Balance:  -150 MW"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        android:layout_marginBottom="4dp"
+                        android:fontFamily="monospace" />
+
+                    <TextView
+                        android:id="@+id/text_status"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Status: Active  "
+                        android:textSize="14sp"
+                        android:textStyle="italic"
+                        android:fontFamily="monospace" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Refresh Button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_refresh"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:text="Refresh Data"
+                android:textColor="@color/dark_red_500"
+                android:layout_marginBottom="16dp"
+                app:strokeColor="@color/dark_red_500"
+                app:icon="@android:drawable/ic_menu_rotate"
+                app:iconTint="@color/dark_red_500" />
+
+            <!-- Actions Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Board Actions"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_adjust_production"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Adjust Production"
+                android:layout_marginBottom="8dp"
+                app:icon="@android:drawable/ic_menu_edit" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_buildings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Buildings"
+                android:layout_marginBottom="8dp"
+                app:icon="@android:drawable/ic_menu_add" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_add_powerplants"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Add Powerplants"
+                android:layout_marginBottom="16dp"
+                app:icon="@android:drawable/ic_menu_add" />
+
+            <!-- View Lists Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Current Setup"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_view_buildings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Buildings List"
+                android:layout_marginBottom="8dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:icon="@android:drawable/ic_menu_view" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_view_powerplants"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="View Powerplants List"
+                android:layout_marginBottom="16dp"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                app:icon="@android:drawable/ic_menu_view" />
+
+            <!-- Reset Section -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reset Board"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/button_reset_board"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Reset All Buildings and Powerplants"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:textColor="@color/dark_red_500"
+                app:strokeColor="@color/dark_red_500"
+                app:icon="@android:drawable/ic_menu_revert"
+                app:iconTint="@color/dark_red_500" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
