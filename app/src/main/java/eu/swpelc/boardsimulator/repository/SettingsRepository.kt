@@ -15,9 +15,9 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class SettingsRepository(context: Context) {
     
-    private val prefs: SharedPreferences = context.getSharedPreferences("app_settings", Context.MODE_PRIVATE)
-    private val apiService = ApiService()
+    private val prefs: SharedPreferences = context.getSharedPreferences("settings", Context.MODE_PRIVATE)
     private val gson = Gson()
+    val apiService = ApiService() // Make public for BoardSubmissionService
     
     private val _serverSettings = MutableStateFlow(loadSettings())
     val serverSettings: Flow<ServerSettings> = _serverSettings.asStateFlow()
@@ -176,6 +176,10 @@ class SettingsRepository(context: Context) {
     
     fun isLoggedIn(): Boolean {
         return _loginToken.value != null
+    }
+    
+    fun getCurrentLoginToken(): String? {
+        return _loginToken.value
     }
     
     fun areBoardsLoggedIn(): Boolean {

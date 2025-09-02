@@ -11,6 +11,7 @@ import eu.swpelc.boardsimulator.repository.BoardConfigRepository
 import eu.swpelc.boardsimulator.repository.SettingsRepository
 import eu.swpelc.boardsimulator.ui.settings.SettingsViewModel
 import eu.swpelc.boardsimulator.ui.settings.SettingsViewModelFactory
+import eu.swpelc.boardsimulator.service.BoardSubmissionService
 import kotlinx.coroutines.launch
 
 class ProductionAdjustmentActivity : AppCompatActivity() {
@@ -22,6 +23,7 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
     private lateinit var binding: ActivityProductionAdjustmentBinding
     private lateinit var settingsViewModel: SettingsViewModel
     private lateinit var boardConfigRepository: BoardConfigRepository
+    private lateinit var boardSubmissionService: BoardSubmissionService
     private lateinit var productionAdapter: ProductionSliderAdapter
     private var boardId: String = ""
 
@@ -38,6 +40,8 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
         setupViewModel()
         setupRecyclerView()
         setupObservers()
+        
+        boardSubmissionService = BoardSubmissionService.getInstance(this)
         
         // Fetch simulation dump on startup
         refreshData()
@@ -56,7 +60,7 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
     private fun setupActionBar() {
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
-            title = "Adjust Production - Board $boardId"
+            title = "Adjust Production - $boardId"
         }
     }
 
@@ -127,7 +131,7 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
                     // For renewable sources, production is fixed at coefficient * quantity
                     coefficient * quantity
                 } else {
-                    // For controllable sources, use minimum from range
+                    // For controllable sources, use minimum from range (can be negative for storage)
                     val rangeMin = range?.min ?: 0.0
                     rangeMin * coefficient * quantity
                 }
@@ -139,11 +143,17 @@ class ProductionAdjustmentActivity : AppCompatActivity() {
                     if (coefficient > 0) coefficient * quantity else 0.0
                 }
                 
-                // Only include items with non-zero max production or renewable sources
-                if (maxProduction > 0 || isRenewable) {
-                    // Load saved production level or default to max
+                // Include items that have a valid range (max != min) or are renewable
+                if (maxProduction != minProduction || isRenewable) {
+                    // Load saved production level or default to middle of range (or max for renewable)
                     val savedProductionLevel = boardConfigRepository.getProductionLevel(boardId, name)
-                    val currentProduction = savedProductionLevel ?: maxProduction
+                    val defaultProduction = if (isRenewable) {
+                        maxProduction
+                    } else {
+                        // For controllable sources, default to middle of range
+                        (minProduction + maxProduction) / 2.0
+                    }
+                    val currentProduction = savedProductionLevel ?: defaultProduction
                     
                     ProductionSliderItem(
                         powerplantName = name,

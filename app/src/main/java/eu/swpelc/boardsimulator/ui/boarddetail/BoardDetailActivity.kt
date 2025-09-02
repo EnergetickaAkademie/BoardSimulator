@@ -17,6 +17,7 @@ import eu.swpelc.boardsimulator.ui.powerplant.PowerplantSelectionActivity
 import eu.swpelc.boardsimulator.ui.powerplant.PowerplantListActivity
 import eu.swpelc.boardsimulator.ui.settings.SettingsViewModel
 import eu.swpelc.boardsimulator.ui.settings.SettingsViewModelFactory
+import eu.swpelc.boardsimulator.service.BoardSubmissionService
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.Job
@@ -31,6 +32,7 @@ class BoardDetailActivity : AppCompatActivity() {
     private lateinit var binding: ActivityBoardDetailBinding
     private lateinit var settingsViewModel: SettingsViewModel
     private lateinit var boardConfigRepository: BoardConfigRepository
+    private lateinit var boardSubmissionService: BoardSubmissionService
     private var boardId: String = ""
     private var periodicRefreshJob: Job? = null
     private var lastBoardData: eu.swpelc.boardsimulator.model.BoardData? = null
@@ -51,6 +53,7 @@ class BoardDetailActivity : AppCompatActivity() {
 
         boardId = intent.getStringExtra(EXTRA_BOARD_ID) ?: ""
         boardConfigRepository = BoardConfigRepository.getInstance(this)
+        boardSubmissionService = BoardSubmissionService.getInstance(this)
         
         setupActionBar()
         setupViewModel()
@@ -122,7 +125,7 @@ class BoardDetailActivity : AppCompatActivity() {
     private fun setupActionBar() {
         supportActionBar?.apply {
             setDisplayHomeAsUpEnabled(true)
-            title = "Board $boardId Configuration"
+            title = "$boardId Configuration"
         }
     }
 
@@ -190,10 +193,6 @@ class BoardDetailActivity : AppCompatActivity() {
             startActivity(intent)
         }
 
-        binding.buttonSubmitData.setOnClickListener {
-            submitBoardDataToServer()
-        }
-
         binding.buttonAddBuildings.setOnClickListener {
             val intent = Intent(this, BuildingSelectionActivity::class.java)
             intent.putExtra(BuildingSelectionActivity.EXTRA_BOARD_ID, boardId)
@@ -239,7 +238,7 @@ class BoardDetailActivity : AppCompatActivity() {
     private fun showResetConfirmationDialog() {
         androidx.appcompat.app.AlertDialog.Builder(this)
             .setTitle("Reset Board")
-            .setMessage("Are you sure you want to reset all buildings and powerplants for Board $boardId? This action cannot be undone.")
+            .setMessage("Are you sure you want to reset all buildings and powerplants for $boardId? This action cannot be undone.")
             .setPositiveButton("Reset") { _, _ ->
                 resetBoard()
             }

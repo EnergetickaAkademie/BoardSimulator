@@ -216,16 +216,6 @@
                 app:icon="@android:drawable/ic_menu_edit" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/button_submit_data"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Submit Board Data to Server"
-                android:layout_marginBottom="8dp"
-                style="@style/Widget.MaterialComponents.Button"
-                android:backgroundTint="@color/dark_red_500"
-                app:icon="@android:drawable/ic_menu_upload" />
-
-            <com.google.android.material.button.MaterialButton
                 android:id="@+id/button_add_buildings"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
